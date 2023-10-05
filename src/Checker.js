@@ -35,12 +35,16 @@ const Checker = ({ initialPlayer, onMove, position }) => {
         color: player ? 'black' : '#ccc',
     };
 
+    const handleDragStart = (event, position) => {
+        const posData = JSON.stringify(position);
+        event.dataTransfer.setData("text/plain", posData);
+    };
+
     return (
         <div 
-            onClick={() => {
-                console.log('Checker clicked. Current player:', player);
-                setPlayer(player === 'player1' ? 'player2' : 'player1');
-            }} 
+            draggable={true}
+            onClick={handleClick} 
+            onDragStart={(e) => handleDragStart(e, position)}
             style={checkerStyle}
         >
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Checker from './checkers';
+import Cell from './Cell';
 
 const Board = () => {
     const boardSize = 8;
@@ -10,60 +10,39 @@ const Board = () => {
         for (let i = 0; i < boardSize; i++) {
             let row = [];
             for (let j = 0; j < boardSize; j++) {
-                row.push((i + j) % 2 === 0 ? "white" : "black");
+                const isBlackCell = (i + j) % 2 !== 0;
+                const player = determineCheckerPlayer(i, j, isBlackCell);
+                row.push({ color: isBlackCell ? 'black' : 'white', player });
             }
             board.push(row);
         }
         return board;
     };
 
-    const handleMove = (fromRow, fromCol, toRow, toCol) => {
+    const determineCheckerPlayer = (i, j, isBlackCell) => {
+        if (i < 3 && isBlackCell) return 'player1';
+        if (i >= 5 && isBlackCell) return 'player2';
+        return null;
+    };
+
+    const handleMoveChecker = (fromRow, fromCol, toRow, toCol) => {
         setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
     };
 
-    const getCheckerPlayer = (rowIndex, cellColor) => {
-        console.log('getCheckerPlayer', rowIndex, cellColor);
-        if (rowIndex < 3 && cellColor === 'black') {
-            return 'player1';
-        } else if (rowIndex >= 5 && cellColor === 'black') {
-            return 'player2';
-        }
-        return null;
-    };
-    
     const initialBoard = createBoard();
 
-    const blackCellStyle = {
-        backgroundColor: 'black',
-        width: '50px',
-        height: '50px',
-        display: 'inline-block',
-    };
-
-    const whiteCellStyle = {
-        ...blackCellStyle,
-        backgroundColor: 'white',
-    };
-
     return (
-        <div className="board" style={{display: 'flex', flexDirection: 'column'}}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
             {initialBoard.map((row, rowIndex) => (
-                <div key={rowIndex} className="row" style={{display: 'flex', width: '400px', border: '1px solid black'}}>
+                <div key={rowIndex} style={{display: 'flex', border: '1px solid black', width: '400px'}}>
                     {row.map((cell, cellIndex) => (
-                        <div 
-                            key={cellIndex} 
-                            className={`cell ${cell}`} 
-                            style={cell === 'white' ? whiteCellStyle : blackCellStyle}
-                        >
-                            {getCheckerPlayer(rowIndex, cell) &&
-                                <Checker 
-                                    initialPlayer={getCheckerPlayer(rowIndex, cell)}
-                                    player={getCheckerPlayer(rowIndex, cell)} 
-                                    onMove={handleMove}
-                                    position={[rowIndex, cellIndex]}
-                                />
-                            }
-                        </div>
+                        <Cell
+                            key={cellIndex}
+                            color={cell.color}
+                            player={cell.player}
+                            position={[rowIndex, cellIndex]}
+                            onMoveChecker={handleMoveChecker}
+                        />
                     ))}
                 </div>
             ))}
