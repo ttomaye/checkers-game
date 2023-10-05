@@ -3,12 +3,13 @@ import Checker from './Checker';
 
 const Cell = ({ color, player, position, onDropChecker, onMouseEnter, onMouseLeave, highlightedCells }) => {
     const [row, col] = position;
+    const highlightedColor = 'yellow';
     const isHighlighted = highlightedCells.some(([hRow, hCol]) => hRow === row && hCol === col);
-    
+
     const cellStyle = {
         width: '50px',
         height: '50px',
-        backgroundColor: isHighlighted ? 'highlightedColor' : color,
+        backgroundColor: isHighlighted ? highlightedColor : color,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
