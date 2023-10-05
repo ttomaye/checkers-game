@@ -58,23 +58,32 @@ const Board = () => {
     const calculatePossibleMoves = (row, col) => {
         let possibleMoves = [];
         let capturingMoves = [];
-
+    
         if (initialBoard[row][col].player === 'player1') {
+           
             if (isValidMove(row, col, row + 2, col - 2)) capturingMoves.push([row + 2, col - 2]);
             if (isValidMove(row, col, row + 2, col + 2)) capturingMoves.push([row + 2, col + 2]);
+           
+            if (isValidMove(row, col, row + 1, col - 1)) possibleMoves.push([row + 1, col - 1]);
+            if (isValidMove(row, col, row + 1, col + 1)) possibleMoves.push([row + 1, col + 1]);
         }
-    
+        
         if (initialBoard[row][col].player === 'player2') {
+            
             if (isValidMove(row, col, row - 2, col - 2)) capturingMoves.push([row - 2, col - 2]);
             if (isValidMove(row, col, row - 2, col + 2)) capturingMoves.push([row - 2, col + 2]);
+            
+            if (isValidMove(row, col, row - 1, col - 1)) possibleMoves.push([row - 1, col - 1]);
+            if (isValidMove(row, col, row - 1, col + 1)) possibleMoves.push([row - 1, col + 1]);
         }
-    
+        
         if (capturingMoves.length > 0) {
             return capturingMoves;
         }
-    
+        
         return possibleMoves;
     };
+    
 
     const handleMouseEnter = (row, col) => {
         const possibleMoves = calculatePossibleMoves(row, col);
