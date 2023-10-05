@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Checker from './checkers';
 
 const Board = () => {
     const boardSize = 8;
+    const [currentPlayer, setCurrentPlayer] = useState('player1');
 
     const createBoard = () => {
         let board = [];
@@ -16,7 +17,12 @@ const Board = () => {
         return board;
     };
 
+    const handleMove = (fromRow, fromCol, toRow, toCol) => {
+        setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
+    };
+
     const getCheckerPlayer = (rowIndex, cellColor) => {
+        console.log('getCheckerPlayer', rowIndex, cellColor);
         if (rowIndex < 3 && cellColor === 'black') {
             return 'player1';
         } else if (rowIndex >= 5 && cellColor === 'black') {
@@ -24,7 +30,7 @@ const Board = () => {
         }
         return null;
     };
-
+    
     const initialBoard = createBoard();
 
     const blackCellStyle = {
@@ -51,7 +57,12 @@ const Board = () => {
                             style={cell === 'white' ? whiteCellStyle : blackCellStyle}
                         >
                             {getCheckerPlayer(rowIndex, cell) &&
-                                <Checker player={getCheckerPlayer(rowIndex, cell)} />
+                                <Checker 
+                                    initialPlayer={getCheckerPlayer(rowIndex, cell)}
+                                    player={getCheckerPlayer(rowIndex, cell)} 
+                                    onMove={handleMove}
+                                    position={[rowIndex, cellIndex]}
+                                />
                             }
                         </div>
                     ))}
