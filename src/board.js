@@ -163,7 +163,6 @@ const Board = () => {
         return false;
     };
     
-
     return (
         <div style={{ textAlign: 'left' }}>
             <h2 style={{ color: getTurnColor() }}>
