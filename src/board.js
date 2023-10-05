@@ -18,26 +18,61 @@ const Board = () => {
         return board;
     };
 
+    const playerInfo = {
+        player1: 'Red',
+        player2: 'Blue',
+    };
+
+    const isCaptureMoveAvailableForChecker = (row, col) => {
+        const directions = currentPlayer === 'player1' ? [[2, 2], [2, -2]] : [[-2, -2], [-2, 2]];
+        
+        return directions.some(([dx, dy]) => {
+            const midRow = row + dx/2;
+            const midCol = col + dy/2;
+            const destRow = row + dx;
+            const destCol = col + dy;
+            
+            if (destRow < 0 || destRow >= boardSize || destCol < 0 || destCol >= boardSize) {
+                return false;
+            }
+    
+            return initialBoard[midRow][midCol]?.player && 
+                   initialBoard[midRow][midCol].player !== currentPlayer && 
+                   !initialBoard[destRow][destCol].player;
+        });
+    };
+    
+    const isCaptureAvailable = (player) => {
+        for (let i = 0; i < boardSize; i++) {
+            for (let j = 0; j < boardSize; j++) {
+                if (initialBoard[i][j].player === player) {
+                    if (isCaptureMoveAvailableForChecker(i, j)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };    
+    
     const calculatePossibleMoves = (row, col) => {
         let possibleMoves = [];
+        let capturingMoves = [];
 
         if (initialBoard[row][col].player === 'player1') {
-
-            if (isValidMove(row, col, row + 1, col - 1)) possibleMoves.push([row + 1, col - 1]);
-            if (isValidMove(row, col, row + 1, col + 1)) possibleMoves.push([row + 1, col + 1]);
-
-            if (isValidMove(row, col, row + 2, col - 2)) possibleMoves.push([row + 2, col - 2]);
-            if (isValidMove(row, col, row + 2, col + 2)) possibleMoves.push([row + 2, col + 2]);
+            if (isValidMove(row, col, row + 2, col - 2)) capturingMoves.push([row + 2, col - 2]);
+            if (isValidMove(row, col, row + 2, col + 2)) capturingMoves.push([row + 2, col + 2]);
         }
-
+    
         if (initialBoard[row][col].player === 'player2') {
-            if (isValidMove(row, col, row - 1, col - 1)) possibleMoves.push([row - 1, col - 1]);
-            if (isValidMove(row, col, row - 1, col + 1)) possibleMoves.push([row - 1, col + 1]);
-
-            if (isValidMove(row, col, row - 2, col - 2)) possibleMoves.push([row - 2, col - 2]);
-            if (isValidMove(row, col, row - 2, col + 2)) possibleMoves.push([row - 2, col + 2]);
+            if (isValidMove(row, col, row - 2, col - 2)) capturingMoves.push([row - 2, col - 2]);
+            if (isValidMove(row, col, row - 2, col + 2)) capturingMoves.push([row - 2, col + 2]);
         }
-
+    
+        if (capturingMoves.length > 0) {
+            return capturingMoves;
+        }
+    
         return possibleMoves;
     };
 
@@ -86,64 +121,86 @@ const Board = () => {
         }
     };
 
+    const getTurnColor = () => {
+        if (playerInfo[currentPlayer] === 'Red') return 'red';
+        if (playerInfo[currentPlayer] === 'Blue') return 'blue';
+        return 'black'; 
+    };
+
     const isValidMove = (fromRow, fromCol, toRow, toCol) => {
         if (toRow < 0 || toCol < 0 || toRow >= boardSize || toCol >= boardSize) {
             return false;
         }
-    
+        
         const distance = Math.abs(fromRow - toRow);
+        const isCaptureMove = distance === 2;
     
-        if (currentPlayer === 'player1' && toRow > fromRow) {
-            if (distance === 1) {
-                return true;
-            } else if (distance === 2) {
-                return initialBoard[(fromRow + toRow) / 2][(fromCol + toCol) / 2]?.player === 'player2';
-            }
-        } else if (currentPlayer === 'player2' && toRow < fromRow) {
-            if (distance === 1) {
-                return true;
-            } else if (distance === 2) {
-                return initialBoard[(fromRow + toRow) / 2][(fromCol + toCol) / 2]?.player === 'player1';
-            }
+        if (isCaptureAvailable(currentPlayer) && !isCaptureMove) {
+            return false;
         }
     
+        if (currentPlayer === 'player1' && toRow <= fromRow) {
+            return false;
+        } else if (currentPlayer === 'player2' && toRow >= fromRow) {
+            return false;
+        }
+        
+        if (distance === 1 && !isCaptureMove) {
+            return initialBoard[toRow][toCol].player === null;
+        } 
+       
+        else if (isCaptureMove) {
+            const midRow = (fromRow + toRow) / 2;
+            const midCol = (fromCol + toCol) / 2;
+    
+            return (
+                initialBoard[midRow][midCol]?.player !== currentPlayer &&
+                initialBoard[midRow][midCol]?.player !== null &&
+                initialBoard[toRow][toCol].player === null
+            );
+        }
+        
         return false;
     };
     
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {initialBoard.map((row, rowIndex) => (
-                <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
-                    {row.map((cell, cellIndex) => (
-                        cell ? (
-                            <Cell
-                                key={cellIndex}
-                                color={cell.color}
-                                player={cell.player}
-                                position={[rowIndex, cellIndex]}
-                                onDropChecker={handleMoveChecker}
-                                onMouseEnter={() => handleMouseEnter(rowIndex, cellIndex)}
-                                onMouseLeave={handleMouseLeave}
-                                highlightedCells={highlightedCells}
-                            />
-                        ) : (
-                            <div
-                                key={cellIndex}
-                                style={{
-                                    width: '50px',
-                                    height: '50px',
-                                    backgroundColor: (rowIndex + cellIndex) % 2 === 0 ? 'white' : 'black',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
-                            />
-                        )
-                    ))}
-
-                </div>
-            ))}
+        <div style={{ textAlign: 'left' }}>
+            <h2 style={{ color: getTurnColor() }}>
+                Checker's Turn : {playerInfo[currentPlayer]}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {initialBoard.map((row, rowIndex) => (
+                    <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
+                        {row.map((cell, cellIndex) => (
+                            cell ? (
+                                <Cell
+                                    key={cellIndex}
+                                    color={cell.color}
+                                    player={cell.player}
+                                    position={[rowIndex, cellIndex]}
+                                    onDropChecker={handleMoveChecker}
+                                    onMouseEnter={() => handleMouseEnter(rowIndex, cellIndex)}
+                                    onMouseLeave={handleMouseLeave}
+                                    highlightedCells={highlightedCells}
+                                />
+                            ) : (
+                                <div
+                                    key={cellIndex}
+                                    style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        backgroundColor: (rowIndex + cellIndex) % 2 === 0 ? 'white' : 'black',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                />
+                            )
+                        ))}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
