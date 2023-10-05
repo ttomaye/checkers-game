@@ -4,6 +4,7 @@ import Cell from './Cell';
 const Board = () => {
     const boardSize = 8;
     const [time, setTime] = useState(0);
+    const [moveCount, setMoveCount] = useState(0); 
 
     useEffect(() => {
         const timerId = setInterval(() => {
@@ -125,6 +126,7 @@ const Board = () => {
 
         if (isValidMove(fromRow, fromCol, toRow, toCol)) {
             let newBoard = [...initialBoard];
+            setMoveCount((prevCount) => prevCount + 1);
             for (let i = 0; i < newBoard.length; i++) {
                 newBoard[i] = [...newBoard[i]];
             }
@@ -192,7 +194,10 @@ const Board = () => {
             <h2 style={{ color: getTurnColor() }}>
                 Checker's Turn : {playerInfo[currentPlayer]}
             </h2>
-            <h4>Game Time: {formatTime(time)}</h4>
+            <div style={{ display: 'flex', flexDirection: 'row', width: '400px'}}>
+            <h4 style={{ flex: '1'}}>Game Time: {formatTime(time)}</h4>
+            <h4 style={{ flex: '1'}}>Moves Made: {moveCount}</h4>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {initialBoard.map((row, rowIndex) => (
                     <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
