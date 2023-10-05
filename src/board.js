@@ -28,22 +28,49 @@ const Board = () => {
     const [initialBoard, setInitialBoard] = useState(createBoard());
 
     const handleMoveChecker = (fromPosition, toPosition) => {
-
         const [fromRow, fromCol] = fromPosition;
         const [toRow, toCol] = toPosition;
-
-
-        let newBoard = [...initialBoard];
-        for (let i = 0; i < newBoard.length; i++) {
-            newBoard[i] = [...newBoard[i]];
+    
+        if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+            let newBoard = [...initialBoard];
+            for (let i = 0; i < newBoard.length; i++) {
+                newBoard[i] = [...newBoard[i]];
+            }
+    
+            newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
+            newBoard[fromRow][fromCol] = { color: (fromRow + fromCol) % 2 === 0 ? 'white' : 'black', player: null };
+    
+            if (Math.abs(fromRow - toRow) === 2) {
+                const jumpedRow = (fromRow + toRow) / 2;
+                const jumpedCol = (fromCol + toCol) / 2;
+                newBoard[jumpedRow][jumpedCol] = { color: newBoard[jumpedRow][jumpedCol].color, player: null };
+            }
+    
+            setInitialBoard(newBoard);
+            setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
+        } else {
+            console.log("Invalid move");
         }
-
-        newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
-        newBoard[fromRow][fromCol] = null;
-
-        setInitialBoard(newBoard);
-
-        setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
+    };
+    
+    const isValidMove = (fromRow, fromCol, toRow, toCol) => {
+        const distance = Math.abs(fromRow - toRow);
+        
+        if (currentPlayer === 'player1' && toRow > fromRow) {
+            if (distance === 1) {
+                return true;
+            } else if (distance === 2) {
+                return initialBoard[(fromRow + toRow) / 2][(fromCol + toCol) / 2].player === 'player2';
+            }
+        } else if (currentPlayer === 'player2' && toRow < fromRow) {
+            if (distance === 1) {
+                return true;
+            } else if (distance === 2) {
+                return initialBoard[(fromRow + toRow) / 2][(fromCol + toCol) / 2].player === 'player1';
+            }
+        }
+    
+        return false;
     };
 
     return (
