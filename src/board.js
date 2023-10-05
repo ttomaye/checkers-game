@@ -1,8 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Cell from './Cell';
 
 const Board = () => {
     const boardSize = 8;
+    const [time, setTime] = useState(0);
+
+    useEffect(() => {
+        const timerId = setInterval(() => {
+            setTime((prevTime) => prevTime + 1);
+        }, 1000);
+
+        return () => clearInterval(timerId);
+    }, []);
+
+    const formatTime = (time) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
 
     const createBoard = () => {
         let board = [];
@@ -25,23 +40,23 @@ const Board = () => {
 
     const isCaptureMoveAvailableForChecker = (row, col) => {
         const directions = currentPlayer === 'player1' ? [[2, 2], [2, -2]] : [[-2, -2], [-2, 2]];
-        
+
         return directions.some(([dx, dy]) => {
-            const midRow = row + dx/2;
-            const midCol = col + dy/2;
+            const midRow = row + dx / 2;
+            const midCol = col + dy / 2;
             const destRow = row + dx;
             const destCol = col + dy;
-            
+
             if (destRow < 0 || destRow >= boardSize || destCol < 0 || destCol >= boardSize) {
                 return false;
             }
-    
-            return initialBoard[midRow][midCol]?.player && 
-                   initialBoard[midRow][midCol].player !== currentPlayer && 
-                   !initialBoard[destRow][destCol].player;
+
+            return initialBoard[midRow][midCol]?.player &&
+                initialBoard[midRow][midCol].player !== currentPlayer &&
+                !initialBoard[destRow][destCol].player;
         });
     };
-    
+
     const isCaptureAvailable = (player) => {
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
@@ -53,37 +68,37 @@ const Board = () => {
             }
         }
         return false;
-    };    
-    
+    };
+
     const calculatePossibleMoves = (row, col) => {
         let possibleMoves = [];
         let capturingMoves = [];
-    
+
         if (initialBoard[row][col].player === 'player1') {
-           
+
             if (isValidMove(row, col, row + 2, col - 2)) capturingMoves.push([row + 2, col - 2]);
             if (isValidMove(row, col, row + 2, col + 2)) capturingMoves.push([row + 2, col + 2]);
-           
+
             if (isValidMove(row, col, row + 1, col - 1)) possibleMoves.push([row + 1, col - 1]);
             if (isValidMove(row, col, row + 1, col + 1)) possibleMoves.push([row + 1, col + 1]);
         }
-        
+
         if (initialBoard[row][col].player === 'player2') {
-            
+
             if (isValidMove(row, col, row - 2, col - 2)) capturingMoves.push([row - 2, col - 2]);
             if (isValidMove(row, col, row - 2, col + 2)) capturingMoves.push([row - 2, col + 2]);
-            
+
             if (isValidMove(row, col, row - 1, col - 1)) possibleMoves.push([row - 1, col - 1]);
             if (isValidMove(row, col, row - 1, col + 1)) possibleMoves.push([row - 1, col + 1]);
         }
-        
+
         if (capturingMoves.length > 0) {
             return capturingMoves;
         }
-        
+
         return possibleMoves;
     };
-    
+
 
     const handleMouseEnter = (row, col) => {
         const possibleMoves = calculatePossibleMoves(row, col);
@@ -133,50 +148,51 @@ const Board = () => {
     const getTurnColor = () => {
         if (playerInfo[currentPlayer] === 'Red') return 'red';
         if (playerInfo[currentPlayer] === 'Blue') return 'blue';
-        return 'black'; 
+        return 'black';
     };
 
     const isValidMove = (fromRow, fromCol, toRow, toCol) => {
         if (toRow < 0 || toCol < 0 || toRow >= boardSize || toCol >= boardSize) {
             return false;
         }
-        
+
         const distance = Math.abs(fromRow - toRow);
         const isCaptureMove = distance === 2;
-    
+
         if (isCaptureAvailable(currentPlayer) && !isCaptureMove) {
             return false;
         }
-    
+
         if (currentPlayer === 'player1' && toRow <= fromRow) {
             return false;
         } else if (currentPlayer === 'player2' && toRow >= fromRow) {
             return false;
         }
-        
+
         if (distance === 1 && !isCaptureMove) {
             return initialBoard[toRow][toCol].player === null;
-        } 
-       
+        }
+
         else if (isCaptureMove) {
             const midRow = (fromRow + toRow) / 2;
             const midCol = (fromCol + toCol) / 2;
-    
+
             return (
                 initialBoard[midRow][midCol]?.player !== currentPlayer &&
                 initialBoard[midRow][midCol]?.player !== null &&
                 initialBoard[toRow][toCol].player === null
             );
         }
-        
+
         return false;
     };
-    
+
     return (
         <div style={{ textAlign: 'left' }}>
             <h2 style={{ color: getTurnColor() }}>
                 Checker's Turn : {playerInfo[currentPlayer]}
             </h2>
+            <h4>Game Time: {formatTime(time)}</h4>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {initialBoard.map((row, rowIndex) => (
                     <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
