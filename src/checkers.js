@@ -18,8 +18,9 @@ const Checker = ({ initialPlayer, onMove, position }) => {
     };
 
     const checkerStyle = {
-        width: '40px',
-        height: '40px',
+        width: '42px',
+        margin: '4px',
+        height: '42px',
         borderRadius: '50%',
         backgroundColor: player === 'player1' ? 'red' : 'blue',
         cursor: 'pointer',

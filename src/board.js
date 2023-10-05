@@ -43,13 +43,12 @@ const Board = () => {
     const whiteCellStyle = {
         ...blackCellStyle,
         backgroundColor: 'white',
-        border: '2px solid #000',
     };
 
     return (
         <div className="board" style={{display: 'flex', flexDirection: 'column'}}>
             {initialBoard.map((row, rowIndex) => (
-                <div key={rowIndex} className="row" style={{display: 'flex'}}>
+                <div key={rowIndex} className="row" style={{display: 'flex', width: '400px', border: '1px solid black'}}>
                     {row.map((cell, cellIndex) => (
                         <div 
                             key={cellIndex} 
