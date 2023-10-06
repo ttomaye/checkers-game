@@ -4,7 +4,8 @@ import Cell from './Cell';
 const Board = () => {
     const boardSize = 8;
     const [time, setTime] = useState(0);
-    const [moveCount, setMoveCount] = useState(0); 
+    const [moveCount, setMoveCount] = useState(0);
+    const [gameHistory, setGameHistory] = useState([]);
 
     useEffect(() => {
         const timerId = setInterval(() => {
@@ -125,6 +126,7 @@ const Board = () => {
         const [toRow, toCol] = toPosition;
 
         if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+            setGameHistory(prev => [...prev, { board: initialBoard, player: currentPlayer }]);
             let newBoard = [...initialBoard];
             setMoveCount((prevCount) => prevCount + 1);
             for (let i = 0; i < newBoard.length; i++) {
@@ -145,6 +147,17 @@ const Board = () => {
         } else {
             console.log("Invalid move");
         }
+    };
+
+    const revertLastMove = () => {
+        if (gameHistory.length === 0) {
+            console.log("No moves to revert!");
+            return;
+        }
+
+        const lastHistory = gameHistory.pop();
+        setInitialBoard(lastHistory.board);
+        setCurrentPlayer(lastHistory.player);
     };
 
     const getTurnColor = () => {
@@ -194,10 +207,33 @@ const Board = () => {
             <h2 style={{ color: getTurnColor() }}>
                 Checker's Turn : {playerInfo[currentPlayer]}
             </h2>
-            <div style={{ display: 'flex', flexDirection: 'row', width: '400px'}}>
-            <h4 style={{ flex: '1'}}>Game Time: {formatTime(time)}</h4>
-            <h4 style={{ flex: '1'}}>Moves Made: {moveCount}</h4>
+            <div style={{ display: 'flex', flexDirection: 'row', width: '400px' }}>
+                <h4 style={{ flex: '1' }}>Game Time: {formatTime(time)}</h4>
+                <h4 style={{ flex: '1' }}>Moves Made: {moveCount}</h4>
             </div>
+            <button
+                onClick={revertLastMove}
+                style={{
+                    backgroundColor: '#4CAF50', 
+                    borderColor: '#4CAF50',
+                    color: 'white',
+                    padding: '10px 20px',
+                    textAlign: 'center',
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                    fontSize: '16px',
+                    margin: '4px 2px',
+                    cursor: 'pointer',
+                    borderRadius: '12px',
+                    marginBottom: '20px', 
+                    transition: 'all 0.3s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
+            >
+                Revert Last Move
+            </button>
+
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {initialBoard.map((row, rowIndex) => (
                     <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
