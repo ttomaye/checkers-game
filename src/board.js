@@ -6,6 +6,7 @@ const Board = () => {
     const [time, setTime] = useState(0);
     const [moveCount, setMoveCount] = useState(0);
     const [gameHistory, setGameHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const timerId = setInterval(() => {
@@ -121,6 +122,31 @@ const Board = () => {
     const [initialBoard, setInitialBoard] = useState(createBoard());
     const [highlightedCells, setHighlightedCells] = useState([]);
 
+    useEffect(() => {
+        const savedGameState = localStorage.getItem('gameState');
+        if (savedGameState) {
+            const { moveCount, time, gameHistory, currentPlayer, initialBoard } = JSON.parse(savedGameState);
+            setMoveCount(moveCount);
+            setTime(time);
+            setGameHistory(gameHistory);
+            setCurrentPlayer(currentPlayer);
+            setInitialBoard(initialBoard);
+        }
+        setLoading(false);
+    }, []);
+
+    useEffect(() => {
+        if (!loading) {
+            localStorage.setItem('gameState', JSON.stringify({
+                moveCount,
+                time,
+                gameHistory,
+                currentPlayer,
+                initialBoard
+            }));
+        }
+    }, [moveCount, time, gameHistory, currentPlayer, initialBoard]);
+
     const handleMoveChecker = (fromPosition, toPosition) => {
         const [fromRow, fromCol] = fromPosition;
         const [toRow, toCol] = toPosition;
@@ -164,6 +190,14 @@ const Board = () => {
         if (playerInfo[currentPlayer] === 'Red') return 'red';
         if (playerInfo[currentPlayer] === 'Blue') return 'blue';
         return 'black';
+    };
+
+    const restartGame = () => {
+        setMoveCount(0);
+        setTime(0);
+        setGameHistory([]);
+        setInitialBoard(createBoard());
+        setCurrentPlayer('player1');
     };
 
     const isValidMove = (fromRow, fromCol, toRow, toCol) => {
@@ -211,12 +245,14 @@ const Board = () => {
                 <h4 style={{ flex: '1' }}>Game Time: {formatTime(time)}</h4>
                 <h4 style={{ flex: '1' }}>Moves Made: {moveCount}</h4>
             </div>
+            <div style={{ display: 'flex', flexDirection: 'row', width: '400px' }}>
             <button
                 onClick={revertLastMove}
                 style={{
-                    backgroundColor: '#4CAF50', 
+                    backgroundColor: '#4CAF50',
                     borderColor: '#4CAF50',
                     color: 'white',
+                    flex: '1',
                     padding: '10px 20px',
                     textAlign: 'center',
                     textDecoration: 'none',
@@ -225,7 +261,7 @@ const Board = () => {
                     margin: '4px 2px',
                     cursor: 'pointer',
                     borderRadius: '12px',
-                    marginBottom: '20px', 
+                    marginBottom: '20px',
                     transition: 'all 0.3s',
                 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
@@ -233,7 +269,28 @@ const Board = () => {
             >
                 Revert Last Move
             </button>
-
+            <button
+                onClick={restartGame}
+                style={{
+                    backgroundColor: '#f20f34',
+                    borderColor: '#f20f34',
+                    color: 'white',
+                    padding: '10px 20px',
+                    textAlign: 'center',
+                    flex: '1',
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                    fontSize: '16px',
+                    margin: '4px 2px',
+                    cursor: 'pointer',
+                    borderRadius: '12px',
+                    marginBottom: '20px',
+                    transition: 'all 0.3s',
+                }}
+            >
+                Restart Game
+            </button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {initialBoard.map((row, rowIndex) => (
                     <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>

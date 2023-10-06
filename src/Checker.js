@@ -5,6 +5,10 @@ const Checker = ({ initialPlayer, onMove, position }) => {
     const [isMoving, setIsMoving] = useState(false);
 
     useEffect(() => {
+        setPlayer(initialPlayer);
+    }, [initialPlayer]);
+    
+    useEffect(() => {
         console.log('Rendering Checker, player:', player);
     }, [player]);
 
