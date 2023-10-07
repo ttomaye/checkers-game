@@ -9,6 +9,8 @@ const Board = () => {
     const [loading, setLoading] = useState(true);
     const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
+    const [player1Checkers, setPlayer1Checkers] = useState(12); 
+    const [player2Checkers, setPlayer2Checkers] = useState(12);
 
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
@@ -76,26 +78,19 @@ const Board = () => {
         return false;
     };
 
-    const checkForWinner = () => {
-        let player1Checkers = 0;
-        let player2Checkers = 0;
-
-        for (let i = 0; i < boardSize; i++) {
-            for (let j = 0; j < boardSize; j++) {
-                if (initialBoard[i][j].player === 'player1') player1Checkers++;
-                if (initialBoard[i][j].player === 'player2') player2Checkers++;
+    useEffect(() => {
+        const checkForWinner = () => {
+            if (player1Checkers === 0) {
+                setGameOver(true);
+                setWinner('Player 2 (Red)');
+            } else if (player2Checkers === 0) {
+                setGameOver(true);
+                setWinner('Player 1 (Blue)');
             }
-        }
-       
-        if (player1Checkers === 0) {
-            setGameOver(true);
-            setWinner('Player 2 (Blue)');
-        } else if (player2Checkers === 0) {
-            setGameOver(true);
-            setWinner('Player 1 (Red)');
-        }
-        console.log(gameOver);
-    };
+        };
+    
+        checkForWinner();
+    }, [player1Checkers, player2Checkers]);
 
     const calculatePossibleMoves = (row, col) => {
         let possibleMoves = [];
@@ -155,7 +150,6 @@ const Board = () => {
     const handleMouseLeave = () => {
         if (gameOver) return;
         setHighlightedCells([]);
-        checkForWinner();
     };
 
     const determineCheckerPlayer = (i, j, isBlackCell) => {
@@ -215,11 +209,9 @@ const Board = () => {
             console.log("Invalid move");
             return;
         }
-
         updateGameHistory();
         const newBoard = createNewBoard(fromRow, fromCol, toRow, toCol);
         updateBoardAndPlayer(newBoard);
-        checkForWinner();
     };
 
     const updateGameHistory = () => {
@@ -250,10 +242,17 @@ const Board = () => {
     const removeJumpedChecker = (board, fromRow, fromCol, toRow, toCol) => {
         const jumpedRow = (fromRow + toRow) / 2;
         const jumpedCol = (fromCol + toCol) / 2;
+        const jumpedCheckerPlayer = board[jumpedRow][jumpedCol].player;
+
         board[jumpedRow][jumpedCol] = {
             color: board[jumpedRow][jumpedCol].color,
             player: null
         };
+        if(jumpedCheckerPlayer === 'player1') {
+            setPlayer2Checkers(prev => prev - 1);
+        } else if(jumpedCheckerPlayer === 'player2') {
+            setPlayer1Checkers(prev => prev - 1);
+        }
     };
 
     const updateBoardAndPlayer = (newBoard) => {
@@ -283,6 +282,8 @@ const Board = () => {
         setGameHistory([]);
         setGameOver(false);
         setWinner(null);
+        setPlayer1Checkers(12);
+        setPlayer2Checkers(12);
         setInitialBoard(createBoard());
         setCurrentPlayer('player1');
     };
@@ -387,7 +388,7 @@ const Board = () => {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {gameOver && (
-                    <h2 style={{ color: winner === 'Player 1 (Red)' ? 'red' : 'blue', fontSize: '24px', fontWeight: 'bold' }}>
+                    <h2 style={{ color: winner === 'Player 1 (Blue)' ? 'blue' : 'red', fontSize: '24px', fontWeight: 'bold' }}>
                         {winner} Wins! <span style={{ color: 'black' }}>Game Over</span>
                     </h2>
                 )}
