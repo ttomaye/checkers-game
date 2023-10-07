@@ -7,14 +7,8 @@ const Board = () => {
     const [moveCount, setMoveCount] = useState(0);
     const [gameHistory, setGameHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const timerId = setInterval(() => {
-            setTime((prevTime) => prevTime + 1);
-        }, 1000);
-
-        return () => clearInterval(timerId);
-    }, []);
+    const [gameOver, setGameOver] = useState(false);
+    const [winner, setWinner] = useState(null);
 
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
@@ -29,7 +23,7 @@ const Board = () => {
             for (let j = 0; j < boardSize; j++) {
                 const isBlackCell = (i + j) % 2 !== 0;
                 const player = determineCheckerPlayer(i, j, isBlackCell);
-                row.push({ color: isBlackCell ? 'black' : 'white', player });
+                row.push({ color: isBlackCell ? 'black' : 'white', player, isKing: false });
             }
             board.push(row);
         }
@@ -39,6 +33,15 @@ const Board = () => {
     const playerInfo = {
         player1: 'Red',
         player2: 'Blue',
+    };
+
+    const kingCheckerIfEligible = (board, row, col) => {
+        if (
+            (board[row][col].player === 'player1' && row === boardSize - 1) ||
+            (board[row][col].player === 'player2' && row === 0)
+        ) {
+            board[row][col].isKing = true;
+        }
     };
 
     const isCaptureMoveAvailableForChecker = (row, col) => {
@@ -73,9 +76,49 @@ const Board = () => {
         return false;
     };
 
+    const checkForWinner = () => {
+        let player1Checkers = 0;
+        let player2Checkers = 0;
+
+        for (let i = 0; i < boardSize; i++) {
+            for (let j = 0; j < boardSize; j++) {
+                if (initialBoard[i][j].player === 'player1') player1Checkers++;
+                if (initialBoard[i][j].player === 'player2') player2Checkers++;
+            }
+        }
+       
+        if (player1Checkers === 0) {
+            setGameOver(true);
+            setWinner('Player 2 (Blue)');
+        } else if (player2Checkers === 0) {
+            setGameOver(true);
+            setWinner('Player 1 (Red)');
+        }
+        console.log(gameOver);
+    };
+
     const calculatePossibleMoves = (row, col) => {
         let possibleMoves = [];
         let capturingMoves = [];
+
+        if (initialBoard[row][col].isKing) {
+            const additionalMoves = [
+                [row + 1, col + 1], [row + 1, col - 1],
+                [row - 1, col + 1], [row - 1, col - 1],
+                [row + 2, col + 2], [row + 2, col - 2],
+                [row - 2, col + 2], [row - 2, col - 2],
+            ];
+
+            additionalMoves.forEach(([newRow, newCol]) => {
+                if (isValidMove(row, col, newRow, newCol)) {
+                    if (Math.abs(newRow - row) === 1) {
+                        possibleMoves.push([newRow, newCol]);
+                    } else {
+                        capturingMoves.push([newRow, newCol]);
+                    }
+                }
+            });
+        }
 
         if (initialBoard[row][col].player === 'player1') {
 
@@ -104,12 +147,15 @@ const Board = () => {
 
 
     const handleMouseEnter = (row, col) => {
+        if (gameOver) return;
         const possibleMoves = calculatePossibleMoves(row, col);
         setHighlightedCells(possibleMoves);
     };
 
     const handleMouseLeave = () => {
+        if (gameOver) return;
         setHighlightedCells([]);
+        checkForWinner();
     };
 
     const determineCheckerPlayer = (i, j, isBlackCell) => {
@@ -136,6 +182,18 @@ const Board = () => {
     }, []);
 
     useEffect(() => {
+        let timerId;
+        if (!gameOver) {
+            timerId = setInterval(() => {
+                setTime((prevTime) => prevTime + 1);
+            }, 1000);
+        }
+    
+        return () => clearInterval(timerId);
+    }, [gameOver]);
+    
+    
+    useEffect(() => {
         if (!loading) {
             localStorage.setItem('gameState', JSON.stringify({
                 moveCount,
@@ -150,60 +208,64 @@ const Board = () => {
     const handleMoveChecker = (fromPosition, toPosition) => {
         const [fromRow, fromCol] = fromPosition;
         const [toRow, toCol] = toPosition;
-    
+
+        if (gameOver) return;
+
         if (!isValidMove(fromRow, fromCol, toRow, toCol)) {
             console.log("Invalid move");
             return;
         }
-        
+
         updateGameHistory();
         const newBoard = createNewBoard(fromRow, fromCol, toRow, toCol);
         updateBoardAndPlayer(newBoard);
+        checkForWinner();
     };
-    
+
     const updateGameHistory = () => {
         setGameHistory(prev => [...prev, { board: initialBoard, player: currentPlayer }]);
         setMoveCount(prevCount => prevCount + 1);
     };
-    
+
     const createNewBoard = (fromRow, fromCol, toRow, toCol) => {
         let newBoard = initialBoard.map(row => [...row]);
-        
+
         newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
         newBoard[fromRow][fromCol] = {
             color: (fromRow + fromCol) % 2 === 0 ? 'white' : 'black',
             player: null
         };
-    
+
         if (isJumpMove(fromRow, toRow)) {
             removeJumpedChecker(newBoard, fromRow, fromCol, toRow, toCol);
         }
-    
+
+        kingCheckerIfEligible(newBoard, toRow, toCol);
+
         return newBoard;
     };
-    
+
     const isJumpMove = (fromRow, toRow) => Math.abs(fromRow - toRow) === 2;
-    
+
     const removeJumpedChecker = (board, fromRow, fromCol, toRow, toCol) => {
         const jumpedRow = (fromRow + toRow) / 2;
         const jumpedCol = (fromCol + toCol) / 2;
-        board[jumpedRow][jumpedCol] = { 
-            color: board[jumpedRow][jumpedCol].color, 
-            player: null 
+        board[jumpedRow][jumpedCol] = {
+            color: board[jumpedRow][jumpedCol].color,
+            player: null
         };
     };
-    
+
     const updateBoardAndPlayer = (newBoard) => {
         setInitialBoard(newBoard);
         setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
     };
-    
+
     const revertLastMove = () => {
         if (gameHistory.length === 0) {
             console.log("No moves to revert!");
             return;
         }
-
         const lastHistory = gameHistory.pop();
         setInitialBoard(lastHistory.board);
         setCurrentPlayer(lastHistory.player);
@@ -219,12 +281,19 @@ const Board = () => {
         setMoveCount(0);
         setTime(0);
         setGameHistory([]);
+        setGameOver(false);
+        setWinner(null);
         setInitialBoard(createBoard());
         setCurrentPlayer('player1');
     };
 
     const isValidMove = (fromRow, fromCol, toRow, toCol) => {
-        if (toRow < 0 || toCol < 0 || toRow >= boardSize || toCol >= boardSize || initialBoard[toRow][toCol].color !== 'black') {
+
+        if (
+            toRow < 0 || toCol < 0 ||
+            toRow >= boardSize || toCol >= boardSize ||
+            initialBoard[toRow][toCol].color !== 'black'
+        ) {
             return false;
         }
 
@@ -235,9 +304,11 @@ const Board = () => {
             return false;
         }
 
-        if (currentPlayer === 'player1' && toRow <= fromRow) {
-            return false;
-        } else if (currentPlayer === 'player2' && toRow >= fromRow) {
+        if (
+            !initialBoard[fromRow][fromCol].isKing &&
+            ((currentPlayer === 'player1' && toRow <= fromRow) ||
+                (currentPlayer === 'player2' && toRow >= fromRow))
+        ) {
             return false;
         }
 
@@ -245,7 +316,7 @@ const Board = () => {
             return initialBoard[toRow][toCol].player === null;
         }
 
-        else if (isCaptureMove) {
+        if (isCaptureMove) {
             const midRow = (fromRow + toRow) / 2;
             const midCol = (fromCol + toCol) / 2;
 
@@ -261,60 +332,65 @@ const Board = () => {
 
     return (
         <div style={{ textAlign: 'left' }}>
-            <h2 style={{ color: getTurnColor() }}>
+             {!gameOver && <h2 style={{ color: getTurnColor() }}>
                 Checker's Turn : {playerInfo[currentPlayer]}
-            </h2>
+            </h2>}
             <div style={{ display: 'flex', flexDirection: 'row', width: '400px' }}>
                 <h4 style={{ flex: '1' }}>Game Time: {formatTime(time)}</h4>
                 <h4 style={{ flex: '1' }}>Moves Made: {moveCount}</h4>
             </div>
             <div style={{ display: 'flex', flexDirection: 'row', width: '400px' }}>
-            <button
-                onClick={revertLastMove}
-                style={{
-                    backgroundColor: '#4CAF50',
-                    borderColor: '#4CAF50',
-                    color: 'white',
-                    flex: '1',
-                    padding: '10px 20px',
-                    textAlign: 'center',
-                    textDecoration: 'none',
-                    display: 'inline-block',
-                    fontSize: '16px',
-                    margin: '4px 2px',
-                    cursor: 'pointer',
-                    borderRadius: '12px',
-                    marginBottom: '20px',
-                    transition: 'all 0.3s',
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
-            >
-                Revert Last Move
-            </button>
-            <button
-                onClick={restartGame}
-                style={{
-                    backgroundColor: '#f20f34',
-                    borderColor: '#f20f34',
-                    color: 'white',
-                    padding: '10px 20px',
-                    textAlign: 'center',
-                    flex: '1',
-                    textDecoration: 'none',
-                    display: 'inline-block',
-                    fontSize: '16px',
-                    margin: '4px 2px',
-                    cursor: 'pointer',
-                    borderRadius: '12px',
-                    marginBottom: '20px',
-                    transition: 'all 0.3s',
-                }}
-            >
-                Restart Game
-            </button>
+                <button
+                    onClick={revertLastMove}
+                    style={{
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#4CAF50',
+                        color: 'white',
+                        flex: '1',
+                        padding: '10px 20px',
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        display: 'inline-block',
+                        fontSize: '16px',
+                        margin: '4px 2px',
+                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        marginBottom: '20px',
+                        transition: 'all 0.3s',
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
+                >
+                    Revert Last Move
+                </button>
+                <button
+                    onClick={restartGame}
+                    style={{
+                        backgroundColor: '#f20f34',
+                        borderColor: '#f20f34',
+                        color: 'white',
+                        padding: '10px 20px',
+                        textAlign: 'center',
+                        flex: '1',
+                        textDecoration: 'none',
+                        display: 'inline-block',
+                        fontSize: '16px',
+                        margin: '4px 2px',
+                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        marginBottom: '20px',
+                        transition: 'all 0.3s',
+                    }}
+                >
+                    Restart Game
+                </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {gameOver && (
+                    <h2 style={{ color: winner === 'Player 1 (Red)' ? 'red' : 'blue', fontSize: '24px', fontWeight: 'bold' }}>
+                        {winner} Wins! <span style={{ color: 'black' }}>Game Over</span>
+                    </h2>
+                )}
                 {initialBoard.map((row, rowIndex) => (
                     <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
                         {row.map((cell, cellIndex) => (
