@@ -150,31 +150,54 @@ const Board = () => {
     const handleMoveChecker = (fromPosition, toPosition) => {
         const [fromRow, fromCol] = fromPosition;
         const [toRow, toCol] = toPosition;
-
-        if (isValidMove(fromRow, fromCol, toRow, toCol)) {
-            setGameHistory(prev => [...prev, { board: initialBoard, player: currentPlayer }]);
-            let newBoard = [...initialBoard];
-            setMoveCount((prevCount) => prevCount + 1);
-            for (let i = 0; i < newBoard.length; i++) {
-                newBoard[i] = [...newBoard[i]];
-            }
-
-            newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
-            newBoard[fromRow][fromCol] = { color: (fromRow + fromCol) % 2 === 0 ? 'white' : 'black', player: null };
-
-            if (Math.abs(fromRow - toRow) === 2) {
-                const jumpedRow = (fromRow + toRow) / 2;
-                const jumpedCol = (fromCol + toCol) / 2;
-                newBoard[jumpedRow][jumpedCol] = { color: newBoard[jumpedRow][jumpedCol].color, player: null };
-            }
-
-            setInitialBoard(newBoard);
-            setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
-        } else {
+    
+        if (!isValidMove(fromRow, fromCol, toRow, toCol)) {
             console.log("Invalid move");
+            return;
         }
+        
+        updateGameHistory();
+        const newBoard = createNewBoard(fromRow, fromCol, toRow, toCol);
+        updateBoardAndPlayer(newBoard);
     };
-
+    
+    const updateGameHistory = () => {
+        setGameHistory(prev => [...prev, { board: initialBoard, player: currentPlayer }]);
+        setMoveCount(prevCount => prevCount + 1);
+    };
+    
+    const createNewBoard = (fromRow, fromCol, toRow, toCol) => {
+        let newBoard = initialBoard.map(row => [...row]);
+        
+        newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
+        newBoard[fromRow][fromCol] = {
+            color: (fromRow + fromCol) % 2 === 0 ? 'white' : 'black',
+            player: null
+        };
+    
+        if (isJumpMove(fromRow, toRow)) {
+            removeJumpedChecker(newBoard, fromRow, fromCol, toRow, toCol);
+        }
+    
+        return newBoard;
+    };
+    
+    const isJumpMove = (fromRow, toRow) => Math.abs(fromRow - toRow) === 2;
+    
+    const removeJumpedChecker = (board, fromRow, fromCol, toRow, toCol) => {
+        const jumpedRow = (fromRow + toRow) / 2;
+        const jumpedCol = (fromCol + toCol) / 2;
+        board[jumpedRow][jumpedCol] = { 
+            color: board[jumpedRow][jumpedCol].color, 
+            player: null 
+        };
+    };
+    
+    const updateBoardAndPlayer = (newBoard) => {
+        setInitialBoard(newBoard);
+        setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
+    };
+    
     const revertLastMove = () => {
         if (gameHistory.length === 0) {
             console.log("No moves to revert!");
