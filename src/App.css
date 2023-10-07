@@ -1,0 +1,94 @@
+.button {
+  padding: 10px 20px;
+  text-align: center;
+  flex: 1;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+  color: white;
+}
+
+.button-revert {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.button-revert:hover {
+  background-color: #45a049;
+}
+
+.button-restart {
+  background-color: #f20f34;
+  border-color: #f20f34;
+}
+
+.button-restart:hover {
+  background-color: #d00c2a;
+}
+
+/* App.css */
+
+.text-left {
+  text-align: left;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.width-400 {
+  width: 400px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.h2-winner-blue {
+  color: blue;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.h2-winner-red {
+  color: red;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.h2-game-over {
+  color: black;
+}
+
+.cell-empty-black {
+  width: 50px;
+  height: 50px;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-empty-white {
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row-border {
+  border: 1px solid black;
+}

@@ -1,0 +1,18 @@
+.checker {
+    width: 42px;
+    margin: 4px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checker.player1 {
+    background-color: red;
+}
+
+.checker.player2 {
+    background-color: blue;
+}

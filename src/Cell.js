@@ -1,18 +1,15 @@
 import React from 'react';
 import Checker from './Checker';
+import './Cell.css'; 
 
 const Cell = ({ color, player, position, onDropChecker, onMouseEnter, onMouseLeave, highlightedCells }) => {
     const [row, col] = position;
     const highlightedColor = 'yellow';
     const isHighlighted = highlightedCells.some(([hRow, hCol]) => hRow === row && hCol === col);
 
-    const cellStyle = {
-        width: '50px',
-        height: '50px',
+   
+    const dynamicStyles = {
         backgroundColor: isHighlighted ? highlightedColor : color,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
     };
 
     const handleDragOver = (event) => {
@@ -27,7 +24,8 @@ const Cell = ({ color, player, position, onDropChecker, onMouseEnter, onMouseLea
 
     return (
         <div 
-            style={cellStyle}
+            style={dynamicStyles}
+            className="cell" 
             onDragOver={handleDragOver}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}

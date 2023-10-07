@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Cell from './Cell';
+import './App.css';
 
 const Board = () => {
     const boardSize = 8;
@@ -332,33 +333,20 @@ const Board = () => {
     };
 
     return (
-        <div style={{ textAlign: 'left' }}>
-             {!gameOver && <h2 style={{ color: getTurnColor() }}>
-                Checker's Turn : {playerInfo[currentPlayer]}
-            </h2>}
-            <div style={{ display: 'flex', flexDirection: 'row', width: '400px' }}>
-                <h4 style={{ flex: '1' }}>Game Time: {formatTime(time)}</h4>
-                <h4 style={{ flex: '1' }}>Moves Made: {moveCount}</h4>
+        <div className="text-left">
+            {!gameOver && 
+                <h2 style={{ color: getTurnColor() }}>
+                    Checker's Turn : {playerInfo[currentPlayer]}
+                </h2>
+            }
+            <div className="flex-row width-400">
+                <h4 className="flex-1">Game Time: {formatTime(time)}</h4>
+                <h4 className="flex-1">Moves Made: {moveCount}</h4>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'row', width: '400px' }}>
+            <div className="flex-row width-400">
                 <button
                     onClick={revertLastMove}
-                    style={{
-                        backgroundColor: '#4CAF50',
-                        borderColor: '#4CAF50',
-                        color: 'white',
-                        flex: '1',
-                        padding: '10px 20px',
-                        textAlign: 'center',
-                        textDecoration: 'none',
-                        display: 'inline-block',
-                        fontSize: '16px',
-                        margin: '4px 2px',
-                        cursor: 'pointer',
-                        borderRadius: '12px',
-                        marginBottom: '20px',
-                        transition: 'all 0.3s',
-                    }}
+                    className="button button-revert"
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
                 >
@@ -366,34 +354,19 @@ const Board = () => {
                 </button>
                 <button
                     onClick={restartGame}
-                    style={{
-                        backgroundColor: '#f20f34',
-                        borderColor: '#f20f34',
-                        color: 'white',
-                        padding: '10px 20px',
-                        textAlign: 'center',
-                        flex: '1',
-                        textDecoration: 'none',
-                        display: 'inline-block',
-                        fontSize: '16px',
-                        margin: '4px 2px',
-                        cursor: 'pointer',
-                        borderRadius: '12px',
-                        marginBottom: '20px',
-                        transition: 'all 0.3s',
-                    }}
+                    className="button button-restart"
                 >
                     Restart Game
                 </button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="flex-column">
                 {gameOver && (
-                    <h2 style={{ color: winner === 'Player 1 (Blue)' ? 'blue' : 'red', fontSize: '24px', fontWeight: 'bold' }}>
-                        {winner} Wins! <span style={{ color: 'black' }}>Game Over</span>
+                    <h2 className={winner === 'Player 1 (Blue)' ? 'h2-winner-blue' : 'h2-winner-red'}>
+                        {winner} Wins! <span className="h2-game-over">Game Over</span>
                     </h2>
                 )}
                 {initialBoard.map((row, rowIndex) => (
-                    <div key={rowIndex} style={{ display: 'flex', border: '1px solid black', width: '400px' }}>
+                    <div key={rowIndex} className="flex-row row-border width-400">
                         {row.map((cell, cellIndex) => (
                             cell ? (
                                 <Cell
@@ -409,14 +382,7 @@ const Board = () => {
                             ) : (
                                 <div
                                     key={cellIndex}
-                                    style={{
-                                        width: '50px',
-                                        height: '50px',
-                                        backgroundColor: (rowIndex + cellIndex) % 2 === 0 ? 'white' : 'black',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                    }}
+                                    className={(rowIndex + cellIndex) % 2 === 0 ? 'cell-empty-white' : 'cell-empty-black'}
                                 />
                             )
                         ))}
@@ -425,6 +391,7 @@ const Board = () => {
             </div>
         </div>
     );
+    
 };
 
 export default Board;
