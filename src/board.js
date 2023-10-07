@@ -224,7 +224,7 @@ const Board = () => {
     };
 
     const isValidMove = (fromRow, fromCol, toRow, toCol) => {
-        if (toRow < 0 || toCol < 0 || toRow >= boardSize || toCol >= boardSize) {
+        if (toRow < 0 || toCol < 0 || toRow >= boardSize || toCol >= boardSize || initialBoard[toRow][toCol].color !== 'black') {
             return false;
         }
 
