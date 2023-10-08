@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Checker.css';
 
-const Checker = ({ initialPlayer, onMove, position }) => {
+const Checker = ({ initialPlayer, position }) => {
     const [player, setPlayer] = useState(initialPlayer);
 
     useEffect(() => {
@@ -18,6 +18,7 @@ const Checker = ({ initialPlayer, onMove, position }) => {
             draggable
             onDragStart={(e) => handleDragStart(e, position)}
             className={`checker ${player}`}
+            data-testid="checker"
         >
         </div>
     );
