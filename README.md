@@ -1,7 +1,3 @@
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
 ## Available Scripts
 
 In the project directory, you can run:
@@ -14,57 +10,62 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
-### `npm test`
+### `npm test --watchAll `
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+------------------------------------------------------------
 
-### `npm run build`
+Code Documentation. 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The Board component serves as the core functional unit of a checker game implemented using React. It handles user interactions, maintains game state, and renders various child components to construct a comprehensive and interactive gaming interface. This documentation provides a closer look at its structure, functionalities, file dependencies, and potential improvements.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+File Dependencies
+React and useState: Imported from 'react' to construct the functional component and manage component-level state, respectively.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+StatusDisplay: This component displays crucial game status information, such as the current player and winner, to keep participants informed.
 
-### `npm run eject`
+ActionButtons: Houses actionable game buttons like "Revert Last Move" and "Restart Game", providing control to the user for enhanced engagement and management.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+BoardDisplay: Ensures the visualization of the game board, responding to user interactions and checker movements.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+useGameLogic: A custom hook tasked with administrating key game logic elements such as the count of player checkers, move count, the status of the game over, and winner determination.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+useGameHistory: Another custom hook managing the history of the game, allowing for features like undoing moves.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+gameUtils: Utility functions like calculatePossibleMoves and isCaptureMoveAvailableForChecker that offer centralized logic for computing possible moves and checking if a capturing move is available for a checker.
 
-## Learn More
+GameInfo: A component to display supplementary game information, such as elapsed time and move count.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+App.css: External CSS file to define the styling of components within the application.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Component Functionality & Methodology
+useState Usage: Various state variables, like currentPlayer and gameOver, are employed to manage game dynamics and drive re-renders upon state changes.
 
-### Code Splitting
+useGameLogic and useGameHistory Hooks: Vital game logics like tracking move counts, checking game termination condition, and time management are encapsulated within these hooks to streamline functionality and enhance code readability.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Event Handlers: Methods like handleMouseEnter, handleMouseLeave, and handleMoveChecker cater to mouse events, thereby determining possible moves and initiating checker moves.
 
-### Analyzing the Bundle Size
+Move Validation and Checker Management: isValidMove ensures only permissible moves are conducted, while createNewBoard and related methods manage the positioning and status of checkers.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Rendering Child Components: Child components are rendered, passing relevant props to display the board, actions, and game information.
 
-### Making a Progressive Web App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Rendered Child Components
+StatusDisplay: Displays dynamic game status, including the winner when the game concludes.
 
-### Advanced Configuration
+GameInfo: Visualizes auxiliary game details like elapsed time and move count.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+ActionButtons: Provides interaction capabilities for the user to control game flow and actions.
 
-### Deployment
+BoardDisplay: Renders the checkers board and reacts to user interaction, reflecting the current game state.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Potential Improvements & Constraints
+Given the project's timeframe, the Board component effectively manages state and logic flow using React's useState and context within custom hooks. However, for a more scalable and comprehensive state management strategy, integrating a state management tool like Redux would be instrumental.
 
-### `npm run build` fails to minify
+Utilizing Redux would facilitate a centralized state management mechanism, reducing prop-drilling and providing a more streamlined data flow across components. Moreover, it would make the application more testable and potentially enhance performance via optimized re-renders. The complexity of integrating Redux was bypassed in this iteration due to time constraints but is a noteworthy consideration for future development cycles.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Perspective on Testing
+Testing is an integral part of software development, ensuring that the codebase remains robust and resilient against unintended regressions as it evolves. In the context of the Board component and its encompassing functionalities, strategic unit testing would fortify its stability, especially considering the multiple user interactions and state management logic embedded within.
+
+Implications of Limited Test Coverage
+The current project may not have extensive test coverage due to the restrained development timeframe. While basic functionality and game logic might be ensured, a comprehensive suite of unit tests to validate various use-cases, edge-cases, and potential failure scenarios may not be sufficiently present. This can potentially expose the application to unidentified issues when scaled or modified in the future.
+
