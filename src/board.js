@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Cell from './Cell';
+import StatusDisplay from './statusDisplay';
+import ActionButtons from './ActionButtons';
+import BoardDisplay from './BoardDisplay';
+import GameInfo from './GameInfo';
 import './App.css';
 
 const Board = () => {
@@ -10,7 +13,7 @@ const Board = () => {
     const [loading, setLoading] = useState(true);
     const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
-    const [player1Checkers, setPlayer1Checkers] = useState(12); 
+    const [player1Checkers, setPlayer1Checkers] = useState(12);
     const [player2Checkers, setPlayer2Checkers] = useState(12);
 
     const formatTime = (time) => {
@@ -89,7 +92,7 @@ const Board = () => {
                 setWinner('Player 1 (Blue)');
             }
         };
-    
+
         checkForWinner();
     }, [player1Checkers, player2Checkers]);
 
@@ -183,11 +186,11 @@ const Board = () => {
                 setTime((prevTime) => prevTime + 1);
             }, 1000);
         }
-    
+
         return () => clearInterval(timerId);
     }, [gameOver]);
-    
-    
+
+
     useEffect(() => {
         if (!loading) {
             localStorage.setItem('gameState', JSON.stringify({
@@ -249,9 +252,9 @@ const Board = () => {
             color: board[jumpedRow][jumpedCol].color,
             player: null
         };
-        if(jumpedCheckerPlayer === 'player1') {
+        if (jumpedCheckerPlayer === 'player1') {
             setPlayer2Checkers(prev => prev - 1);
-        } else if(jumpedCheckerPlayer === 'player2') {
+        } else if (jumpedCheckerPlayer === 'player2') {
             setPlayer1Checkers(prev => prev - 1);
         }
     };
@@ -269,12 +272,6 @@ const Board = () => {
         const lastHistory = gameHistory.pop();
         setInitialBoard(lastHistory.board);
         setCurrentPlayer(lastHistory.player);
-    };
-
-    const getTurnColor = () => {
-        if (playerInfo[currentPlayer] === 'Red') return 'red';
-        if (playerInfo[currentPlayer] === 'Blue') return 'blue';
-        return 'black';
     };
 
     const restartGame = () => {
@@ -334,64 +331,19 @@ const Board = () => {
 
     return (
         <div className="text-left">
-            {!gameOver && 
-                <h2 style={{ color: getTurnColor() }}>
-                    Checker's Turn : {playerInfo[currentPlayer]}
-                </h2>
-            }
-            <div className="flex-row width-400">
-                <h4 className="flex-1">Game Time: {formatTime(time)}</h4>
-                <h4 className="flex-1">Moves Made: {moveCount}</h4>
-            </div>
-            <div className="flex-row width-400">
-                <button
-                    onClick={revertLastMove}
-                    className="button button-revert"
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
-                >
-                    Revert Last Move
-                </button>
-                <button
-                    onClick={restartGame}
-                    className="button button-restart"
-                >
-                    Restart Game
-                </button>
-            </div>
-            <div className="flex-column">
-                {gameOver && (
-                    <h2 className={winner === 'Player 1 (Blue)' ? 'h2-winner-blue' : 'h2-winner-red'}>
-                        {winner} Wins! <span className="h2-game-over">Game Over</span>
-                    </h2>
-                )}
-                {initialBoard.map((row, rowIndex) => (
-                    <div key={rowIndex} className="flex-row row-border width-400">
-                        {row.map((cell, cellIndex) => (
-                            cell ? (
-                                <Cell
-                                    key={cellIndex}
-                                    color={cell.color}
-                                    player={cell.player}
-                                    position={[rowIndex, cellIndex]}
-                                    onDropChecker={handleMoveChecker}
-                                    onMouseEnter={() => handleMouseEnter(rowIndex, cellIndex)}
-                                    onMouseLeave={handleMouseLeave}
-                                    highlightedCells={highlightedCells}
-                                />
-                            ) : (
-                                <div
-                                    key={cellIndex}
-                                    className={(rowIndex + cellIndex) % 2 === 0 ? 'cell-empty-white' : 'cell-empty-black'}
-                                />
-                            )
-                        ))}
-                    </div>
-                ))}
-            </div>
+            <StatusDisplay currentPlayer={currentPlayer} time={time} moveCount={moveCount} gameOver={gameOver} playerInfo={playerInfo} />
+            <GameInfo time={time} moveCount={moveCount} formatTime={formatTime} />
+            <ActionButtons revertLastMove={revertLastMove} restartGame={restartGame} />
+            <BoardDisplay 
+                initialBoard={initialBoard} 
+                handleMoveChecker={handleMoveChecker} 
+                handleMouseEnter={handleMouseEnter} 
+                handleMouseLeave={handleMouseLeave} 
+                highlightedCells={highlightedCells} 
+            />
         </div>
     );
-    
+
 };
 
 export default Board;
