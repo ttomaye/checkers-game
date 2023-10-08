@@ -19,7 +19,7 @@ const StatusDisplay = ({ currentPlayer, gameOver, playerInfo, winner }) => {
                 </h2>
             ) : (
                 <h2>
-                    <h3 style={{ color: winner}}> Winner is:  {winner}</h3>
+                    <p style={{ color: winner}}> Winner is:  {winner}</p>
                 </h2>
             )}
         </div>
