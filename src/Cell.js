@@ -30,6 +30,7 @@ const Cell = ({ color, player, position, onDropChecker, onMouseEnter, onMouseLea
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             onDrop={handleDrop}
+            data-testid="cell"
         >
             {player && <Checker initialPlayer={player} player={player} position={position}/>}
         </div>
