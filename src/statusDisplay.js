@@ -1,4 +1,4 @@
-const StatusDisplay = ({ currentPlayer, time, moveCount, gameOver, playerInfo }) => {
+const StatusDisplay = ({ currentPlayer, gameOver, playerInfo, winner }) => {
 
     const playerColors = {
         player1: 'Red',
@@ -13,11 +13,15 @@ const StatusDisplay = ({ currentPlayer, time, moveCount, gameOver, playerInfo })
 
     return (
         <div>
-            {!gameOver && 
+            {!gameOver ? (
                 <h2 style={{ color: getTurnColor() }}>
-                    Checker's Turn : {playerInfo[currentPlayer]}
+                    Checker's Turn: {playerInfo[currentPlayer]}
                 </h2>
-            }
+            ) : (
+                <h2>
+                    <h3 style={{ color: winner}}> Winner is:  {winner}</h3>
+                </h2>
+            )}
         </div>
     );
 };

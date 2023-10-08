@@ -2,38 +2,47 @@ import React, { useState, useEffect } from 'react';
 import StatusDisplay from './statusDisplay';
 import ActionButtons from './ActionButtons';
 import BoardDisplay from './BoardDisplay';
+import useGameLogic from './CustomHooks/useGameLogic';
+import useGameHistory from './CustomHooks/useGameHistory';
 import GameInfo from './GameInfo';
 import './App.css';
 
 const Board = () => {
     const boardSize = 8;
-    const [time, setTime] = useState(0);
-    const [moveCount, setMoveCount] = useState(0);
-    const [gameHistory, setGameHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [gameOver, setGameOver] = useState(false);
-    const [winner, setWinner] = useState(null);
-    const [player1Checkers, setPlayer1Checkers] = useState(12);
-    const [player2Checkers, setPlayer2Checkers] = useState(12);
+    const initialPlayer = 'player1';
+    const [currentPlayer, setCurrentPlayer] = useState(initialPlayer);
+    const {
+        time,
+        setTime,
+        moveCount,
+        setMoveCount,
+        gameHistory,
+        setGameHistory,
+        gameOver,
+        setGameOver,
+        winner,
+        setWinner,
+        player1Checkers,
+        setPlayer1Checkers,
+        player2Checkers,
+        setPlayer2Checkers,
+        initialBoard,
+        setInitialBoard,
+        highlightedCells,
+        setHighlightedCells,
+        restartGame,
+    } = useGameLogic({currentPlayer, setCurrentPlayer, boardSize});
+
+    const {
+        currentBoard,  
+        updateGameHistory, 
+        revertLastMove,
+    } = useGameHistory({currentPlayer, setCurrentPlayer, moveCount, setMoveCount, initialBoard, initialPlayer});    
 
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
         const seconds = time % 60;
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    const createBoard = () => {
-        let board = [];
-        for (let i = 0; i < boardSize; i++) {
-            let row = [];
-            for (let j = 0; j < boardSize; j++) {
-                const isBlackCell = (i + j) % 2 !== 0;
-                const player = determineCheckerPlayer(i, j, isBlackCell);
-                row.push({ color: isBlackCell ? 'black' : 'white', player, isKing: false });
-            }
-            board.push(row);
-        }
-        return board;
     };
 
     const playerInfo = {
@@ -81,20 +90,6 @@ const Board = () => {
         }
         return false;
     };
-
-    useEffect(() => {
-        const checkForWinner = () => {
-            if (player1Checkers === 0) {
-                setGameOver(true);
-                setWinner('Player 2 (Red)');
-            } else if (player2Checkers === 0) {
-                setGameOver(true);
-                setWinner('Player 1 (Blue)');
-            }
-        };
-
-        checkForWinner();
-    }, [player1Checkers, player2Checkers]);
 
     const calculatePossibleMoves = (row, col) => {
         let possibleMoves = [];
@@ -144,7 +139,6 @@ const Board = () => {
         return possibleMoves;
     };
 
-
     const handleMouseEnter = (row, col) => {
         if (gameOver) return;
         const possibleMoves = calculatePossibleMoves(row, col);
@@ -155,53 +149,6 @@ const Board = () => {
         if (gameOver) return;
         setHighlightedCells([]);
     };
-
-    const determineCheckerPlayer = (i, j, isBlackCell) => {
-        if (i < 3 && isBlackCell) return 'player1';
-        if (i >= 5 && isBlackCell) return 'player2';
-        return null;
-    };
-
-    const [currentPlayer, setCurrentPlayer] = useState('player1');
-    const [initialBoard, setInitialBoard] = useState(createBoard());
-    const [highlightedCells, setHighlightedCells] = useState([]);
-
-    useEffect(() => {
-        const savedGameState = localStorage.getItem('gameState');
-        if (savedGameState) {
-            const { moveCount, time, gameHistory, currentPlayer, initialBoard } = JSON.parse(savedGameState);
-            setMoveCount(moveCount);
-            setTime(time);
-            setGameHistory(gameHistory);
-            setCurrentPlayer(currentPlayer);
-            setInitialBoard(initialBoard);
-        }
-        setLoading(false);
-    }, []);
-
-    useEffect(() => {
-        let timerId;
-        if (!gameOver) {
-            timerId = setInterval(() => {
-                setTime((prevTime) => prevTime + 1);
-            }, 1000);
-        }
-
-        return () => clearInterval(timerId);
-    }, [gameOver]);
-
-
-    useEffect(() => {
-        if (!loading) {
-            localStorage.setItem('gameState', JSON.stringify({
-                moveCount,
-                time,
-                gameHistory,
-                currentPlayer,
-                initialBoard
-            }));
-        }
-    }, [moveCount, time, gameHistory, currentPlayer, initialBoard]);
 
     const handleMoveChecker = (fromPosition, toPosition) => {
         const [fromRow, fromCol] = fromPosition;
@@ -216,11 +163,6 @@ const Board = () => {
         updateGameHistory();
         const newBoard = createNewBoard(fromRow, fromCol, toRow, toCol);
         updateBoardAndPlayer(newBoard);
-    };
-
-    const updateGameHistory = () => {
-        setGameHistory(prev => [...prev, { board: initialBoard, player: currentPlayer }]);
-        setMoveCount(prevCount => prevCount + 1);
     };
 
     const createNewBoard = (fromRow, fromCol, toRow, toCol) => {
@@ -264,30 +206,7 @@ const Board = () => {
         setCurrentPlayer(currentPlayer === 'player1' ? 'player2' : 'player1');
     };
 
-    const revertLastMove = () => {
-        if (gameHistory.length === 0) {
-            console.log("No moves to revert!");
-            return;
-        }
-        const lastHistory = gameHistory.pop();
-        setInitialBoard(lastHistory.board);
-        setCurrentPlayer(lastHistory.player);
-    };
-
-    const restartGame = () => {
-        setMoveCount(0);
-        setTime(0);
-        setGameHistory([]);
-        setGameOver(false);
-        setWinner(null);
-        setPlayer1Checkers(12);
-        setPlayer2Checkers(12);
-        setInitialBoard(createBoard());
-        setCurrentPlayer('player1');
-    };
-
     const isValidMove = (fromRow, fromCol, toRow, toCol) => {
-
         if (
             toRow < 0 || toCol < 0 ||
             toRow >= boardSize || toCol >= boardSize ||
@@ -331,7 +250,7 @@ const Board = () => {
 
     return (
         <div className="text-left">
-            <StatusDisplay currentPlayer={currentPlayer} time={time} moveCount={moveCount} gameOver={gameOver} playerInfo={playerInfo} />
+            <StatusDisplay currentPlayer={currentPlayer} time={time} gameOver={gameOver} playerInfo={playerInfo} winner={winner} />
             <GameInfo time={time} moveCount={moveCount} formatTime={formatTime} />
             <ActionButtons revertLastMove={revertLastMove} restartGame={restartGame} />
             <BoardDisplay 
