@@ -37,7 +37,6 @@ const Board = () => {
     const {
         currentBoard,  
         updateGameHistory, 
-        revertLastMove,
     } = useGameHistory({currentPlayer, setCurrentPlayer, moveCount, setMoveCount, initialBoard, initialPlayer});    
 
     const formatTime = (time) => {
@@ -186,7 +185,7 @@ const Board = () => {
         <div className="text-left">
             <StatusDisplay currentPlayer={currentPlayer} time={time} gameOver={gameOver} playerInfo={playerInfo} winner={winner} />
             <GameInfo time={time} moveCount={moveCount} formatTime={formatTime} />
-            <ActionButtons revertLastMove={revertLastMove} restartGame={restartGame} />
+            <ActionButtons restartGame={restartGame} />
             <BoardDisplay 
                 initialBoard={initialBoard} 
                 handleMoveChecker={handleMoveChecker} 
